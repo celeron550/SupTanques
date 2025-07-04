@@ -4,6 +4,9 @@
 #include <string>
 #include <ctime>
 #include "supdados.h"
+#include <thread>
+#include "mysocket.h"
+#include <mutex>
 /* ACRESCENTAR */
 
 class SupCliente

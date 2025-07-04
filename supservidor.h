@@ -2,6 +2,9 @@
 #define _SUP_SERVIDOR_H_
 
 /* ACRESCENTAR */
+#include <thread>
+#include "mysocket.h"
+#include <mutex>
 #include <string>
 #include <list>
 #include "tanques.h"
