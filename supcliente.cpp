@@ -1,5 +1,7 @@
 #include <iostream>
+#include <chrono>
 #include "supcliente.h"
+
 
 /// Construtor default
 SupCliente::SupCliente()
@@ -10,11 +12,13 @@ SupCliente::SupCliente()
   , start_t(time_t(-1))
   , last_t(time_t(-1))
   , timeRefresh(20)
-  /* ACRESCENTAR */
+  , sock()
+  , mtx()
+  , thr()
 {
   // Inicializa a biblioteca de sockets
   /* ACRESCENTAR */
-  if (/* MODIFICAR */true)
+  if (mysocket::init() != mysocket_status::SOCK_OK)
   {
     std::cerr <<  "Biblioteca mysocket nao pode ser inicializada";
     exit(-666);
@@ -31,20 +35,21 @@ SupCliente::~SupCliente()
   if (isConnected())
   {
     // Envia o comando de logout para o servidor
-    /* ACRESCENTAR */
+    sock.write_uint16(CMD_LOGOUT);
     // Espera 1 segundo para dar tempo ao servidor de ler a msg de LOGOUT
     // antes de fechar o socket
-    /* ACRESCENTAR */
+    std::this_thread::sleep_for(std::chrono::seconds(1));
     // Fecha o socket e, consequentemente, deve
     // encerrar a thread de leitura de dados do socket
-    /* ACRESCENTAR */
+    sock.close();
+    encerrarCliente = true;
   }
 
   // Aguarda pelo fim da thread de recepcao
   join_if_joinable();
 
   // Encerra a biblioteca de sockets
-  /* ACRESCENTAR */
+  mysocket::end();
 }
 
 /// Conecta com o servidor.
@@ -54,6 +59,7 @@ void SupCliente::conectar(const std::string& IP,
                           const std::string& Login,
                           const std::string& Senha)
 {
+
   // Comando recebido
   uint16_t cmd;
 
@@ -64,25 +70,30 @@ void SupCliente::conectar(const std::string& IP,
 
     // Conecta o socket
     // Em caso de erro, throw 102
-    /* ACRESCENTAR */
+    mysocket_status iResult = sock.connect(IP, SUP_PORT);
+    if (iResult != mysocket_status::SOCK_OK) throw 102;
 
     // Envia o comando CMD_LOGIN.
     // Nao precisa bloquear o mutex para garantir exclusao mutua
     // pq nesse momento ainda nao foi lancada a thread.
     // Entao, essa funcao eh a unica enviando dados pelo socket.
     // Em caso de erro, throw 103
-    /* ACRESCENTAR */
+    iResult = sock.write_uint16(CMD_LOGIN);
+    if (iResult != mysocket_status::SOCK_OK) throw 103;
 
     // Envia 1o parametro do comando (login)
     // Em caso de erro, throw 104
-    /* ACRESCENTAR */
+    iResult = sock.write_string(Login);
+    if (iResult != mysocket_status::SOCK_OK) throw 104;
     // Envia 2o parametro do comando (senha)
     // Em caso de erro, throw 105
-    /* ACRESCENTAR */
+    iResult = sock.write_string(Senha);
+    if (iResult != mysocket_status::SOCK_OK) throw 105;
 
     // Leh a resposta (cmd) do servidor ao pedido de conexao
     // Em caso de erro, throw 106
-    /* ACRESCENTAR */
+    iResult = sock.read_uint16(cmd, 1000*SUP_TIMEOUT);
+    if (iResult != mysocket_status::SOCK_OK) throw 106;
     // Se a resposta nao for CMD_ADMIN_OK ou CMD_OK, throw 107
     if (cmd!=CMD_ADMIN_OK && cmd!=CMD_OK) throw 107;
 
@@ -95,14 +106,17 @@ void SupCliente::conectar(const std::string& IP,
 
     // Lanca a thread de solicitacao periodica de dados
     // Em caso de erro, throw 108
-    /* ACRESCENTAR */
+    thr = std::thread([this](){
+      this->main_thread();
+    });
+    if (!thr.joinable()) throw 108;
   }
   catch (int err)
   {
     // Encerra o cliente
     encerrarCliente = true;
     // Fecha o socket
-    /* ACRESCENTAR */
+    sock.close();
 
     // Msg de erro para debug
     std::string msg_err("Erro na conexao com o servidor ");

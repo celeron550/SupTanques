@@ -105,14 +105,14 @@ private:
   int timeRefresh;
 
   // Socket de comunicacaco
-  /* ACRESCENTAR */
+  tcp_mysocket sock;
 
   // Exclusao mutua para nao enviar novo comando antes de
   // receber a resposta do comando anterior
-  /* ACRESCENTAR */
+  std::mutex mtx;
 
   // Identificador da thread de solicitacao periodica de dados
-  /* ACRESCENTAR */
+  std::thread thr;
 };
 
 #endif // _SUP_CLIENTE_H_
