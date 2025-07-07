@@ -13,12 +13,15 @@ SupServidor::SupServidor()
   : Tanks()
   , server_on(false)
   , LU()
+  , thr_server() //checar dps se ta na ordem certa
+  , sock_server()
+  
   /*ACRESCENTAR*/
 {
   // Inicializa a biblioteca de sockets
-  /*ACRESCENTAR*/
+  mysocket_status iResult = mysocket::init();
   // Em caso de erro, mensagem e encerra
-  if (/*MODIFICAR*/true)
+  if (iResult != mysocket_status::SOCK_OK)
   {
     cerr <<  "Biblioteca mysocket nao pode ser inicializada";
     exit(-1);
@@ -40,7 +43,7 @@ SupServidor::~SupServidor()
   /*ACRESCENTAR*/
 
   // Encerra a biblioteca de sockets
-  /*ACRESCENTAR*/
+  mysocket::end();
 }
 
 /// Liga o servidor
@@ -58,14 +61,17 @@ bool SupServidor::setServerOn()
   try
   {
     // Coloca o socket de conexoes em escuta
-    /*ACRESCENTAR*/
+   mysocket_status iResult = sock_server.listen(SUP_PORT);
     // Em caso de erro, gera excecao
-    if (/*MODIFICAR*/true) throw 1;
+    if (iResult != mysocket_status::SOCK_OK) throw 1;
 
     // Lanca a thread do servidor que comunica com os clientes
-    /*ACRESCENTAR*/
+    thr_server = thread( [this]()
+    {
+      this->thr_server_main();
+    } );
     // Em caso de erro, gera excecao
-    if (/*MODIFICAR*/true) throw 2;
+    if (!thr_server.joinable()) throw 2;
   }
   catch(int i)
   {
@@ -75,7 +81,7 @@ bool SupServidor::setServerOn()
     server_on = false;
 
     // Fecha o socket do servidor
-    /*ACRESCENTAR*/
+    sock_server.close();
 
     return false;
   }
@@ -96,10 +102,11 @@ void SupServidor::setServerOff()
   // Fecha todos os sockets dos clientes
   for (auto& U : LU) U.close();
   // Fecha o socket de conexoes
-  /*ACRESCENTAR*/
+  sock_server.close();
 
   // Espera pelo fim da thread do servidor
-  /*ACRESCENTAR*/
+  if (thr_server.joinable()) thr_server.join();
+  thr_server = thread();
   // Faz o identificador da thread apontar para thread vazia
   /*ACRESCENTAR*/
 
