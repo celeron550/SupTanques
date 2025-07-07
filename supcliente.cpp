@@ -59,7 +59,7 @@ void SupCliente::conectar(const std::string& IP,
                           const std::string& Login,
                           const std::string& Senha)
 {
-
+  mysocket_status iResult; //Variavel que armazena o resultado das operações com sockets  
   // Comando recebido
   uint16_t cmd;
 
@@ -70,7 +70,7 @@ void SupCliente::conectar(const std::string& IP,
 
     // Conecta o socket
     // Em caso de erro, throw 102
-    mysocket_status iResult = sock.connect(IP, SUP_PORT);
+    iResult = sock.connect(IP, SUP_PORT);
     if (iResult != mysocket_status::SOCK_OK) throw 102;
 
     // Envia o comando CMD_LOGIN.
@@ -142,13 +142,13 @@ void SupCliente::desconectar()
   if (isConnected())
   {
     // Envia o comando de logout para o servidor
-    /* ACRESCENTAR */
+    sock.write_uint16(CMD_LOGOUT);
     // Espera 1 segundo para dar tempo ao servidor de ler a msg de LOGOUT
     // antes de fechar o socket
-    /* ACRESCENTAR */
+    std::this_thread::sleep_for(std::chrono::seconds(1));
     // Fecha o socket e, consequentemente, deve
     // encerrar a thread de leitura de dados do socket
-    /* ACRESCENTAR */
+    sock.close();
   }
 
   // Aguarda fim da thread
@@ -168,12 +168,14 @@ void SupCliente::desconectar()
 void SupCliente::setValvOpen(bool isV1, bool Open)
 {
   // Comando enviado/recebido
+  mysocket_status iResult; //Variavel que armazena o resultado das operações com sockets
   uint16_t cmd = (isV1 ? CMD_SET_V1 : CMD_SET_V2);
+  //uint16_t resp; ##Talvez precise de uma variavel resposta pra armazenar a leitura de (cmd) do servidor ao comando##
 
   // Bloqueia o mutex para garantir exclusao mutua no envio pelo socket
   // de comandos que ficam aguardando resposta, para evitar que a resposta
   // de um comando seja recebida por outro comando em outra thread.
-  /* ACRESCENTAR */
+  mtx.lock();
 
   try
   {
@@ -182,22 +184,24 @@ void SupCliente::setValvOpen(bool isV1, bool Open)
 
     // Escreve o comando CMD_SET_V1 ou CMD_SET_V2
     // Em caso de erro, throw 202
-    /* ACRESCENTAR */
+    iResult = sock.write_uint16(cmd);
+    if (iResult != mysocket_status::SOCK_OK) throw 202;
 
     // Escreve o parametro do comando (==0 se fechada !=0 se aberta)
     // Em caso de erro, throw 203
-    /* ACRESCENTAR */
+    iResult = sock.write_uint16(Open ? 1 : 0);
+    if (iResult != mysocket_status::SOCK_OK) throw 203;
 
     // Leh a resposta (cmd) do servidor ao comando
     // Em caso de erro, throw 204
-    /* ACRESCENTAR */
+    iResult = sock.read_uint16(cmd, 1000*SUP_TIMEOUT);
     // Se resposta nao for CMD_OK, throw 205
     if (cmd != CMD_OK) throw 205;
   }
   catch(int err)
   {
     // Libera o mutex para sair da zona de exclusao mutua.
-    /* ACRESCENTAR */
+    mtx.unlock();
 
     // Msg de erro para debug
     std::string msg_err = "Erro na atuacao sobre a valvula ";
@@ -210,7 +214,7 @@ void SupCliente::setValvOpen(bool isV1, bool Open)
   }
 
   // Libera o mutex para sair da zona de exclusao mutua.
-  /* ACRESCENTAR */
+  mtx.unlock();
 
   // Nao reexibe a interface com novo estado.
   // Serah reexibida quando chegar o proximo dado do servidor, que
