@@ -7,6 +7,7 @@
 #include <thread>
 #include "mysocket.h"
 #include <mutex>
+#include <cstdint>
 /* ACRESCENTAR */
 
 class SupCliente

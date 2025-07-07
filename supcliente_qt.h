@@ -4,6 +4,7 @@
 #include <QMainWindow>
 #include "suplogin.h"
 #include "supimg.h"
+#include <cstdint>
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class SupClienteQt; }

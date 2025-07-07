@@ -5,6 +5,7 @@
 #include <thread>       /* std::thread */
 #include <mutex>        /* std::mutex */
 #include "tanques-param.h"
+#include <cstdint>
 
 /// Classe que representa o sistema com 2 tanques
 class Tanks
@@ -57,7 +58,7 @@ private:
 
   // Instante da ultima simulacao
   time_t last_t;
-  // Identificador da thread de simulação
+  // Identificador da thread de simulaï¿½ï¿½o
   std::thread thr_simul;
 
   // Funcoes privadas de simulacao

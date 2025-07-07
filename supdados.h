@@ -7,6 +7,7 @@
 /// Timeout (em segundos) para esperar o envio pelo socket
 /// de um parametro ou resposta de um comando enviado anteriormente
 #define SUP_TIMEOUT 10
+#include <cstdint>
 
 /// Os comandos do SupTanques.
 enum SupCommands: uint16_t
