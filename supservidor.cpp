@@ -229,7 +229,7 @@ void SupServidor::thr_server_main(void)
       }
 
       // Espera ateh que chegue dado em algum socket (com timeout)
-      f.wait_read(10000);
+      f.wait_read(1000*SUP_TIMEOUT); 
 
       // De acordo com o resultado da espera:
       // SOCK_TIMEOUT:
