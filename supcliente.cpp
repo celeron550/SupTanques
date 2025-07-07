@@ -195,6 +195,7 @@ void SupCliente::setValvOpen(bool isV1, bool Open)
     // Leh a resposta (cmd) do servidor ao comando
     // Em caso de erro, throw 204
     iResult = sock.read_uint16(cmd, 1000*SUP_TIMEOUT);
+    if (iResult != mysocket_status::SOCK_OK) throw 204;
     // Se resposta nao for CMD_OK, throw 205
     if (cmd != CMD_OK) throw 205;
   }
