@@ -13,10 +13,9 @@ SupServidor::SupServidor()
   : Tanks()
   , server_on(false)
   , LU()
-  , thr_server() //checar dps se ta na ordem certa
+  , thr_server() 
   , sock_server()
   
-  /*ACRESCENTAR*/
 {
   // Inicializa a biblioteca de sockets
   mysocket_status iResult = mysocket::init();
@@ -37,10 +36,10 @@ SupServidor::~SupServidor()
   // Fecha todos os sockets dos clientes
   for (auto& U : LU) U.close();
   // Fecha o socket de conexoes
-  /*ACRESCENTAR*/
+  sock_server.close();
 
   // Espera o fim da thread do servidor
-  /*ACRESCENTAR*/
+  if (thr_server.joinable()) thr_server.join();
 
   // Encerra a biblioteca de sockets
   mysocket::end();
@@ -106,9 +105,9 @@ void SupServidor::setServerOff()
 
   // Espera pelo fim da thread do servidor
   if (thr_server.joinable()) thr_server.join();
-  thr_server = thread();
   // Faz o identificador da thread apontar para thread vazia
-  /*ACRESCENTAR*/
+  thr_server = thread();
+  
 
   // Desliga os tanques
   setTanksOff();
@@ -195,7 +194,15 @@ bool SupServidor::removeUser(const string& Login)
 void SupServidor::thr_server_main(void)
 {
   // Fila de sockets para aguardar chegada de dados
-  /*ACRESCENTAR*/
+  mysocket_queue f;
+  // Socket temporario
+  tcp_mysocket t;
+  // Informacao lida do socket
+  
+  // Variaveis auxiliares
+  mysocket_status iResult;
+
+  
 
   while (server_on)
   {
@@ -204,7 +211,7 @@ void SupServidor::thr_server_main(void)
     try
     {
       // Encerra se o socket de conexoes estiver fechado
-      if (/*MODIFICAR*/true)
+      if (!sock_server.accepting())
       {
         throw "socket de conexoes fechado";
       }
@@ -213,14 +220,16 @@ void SupServidor::thr_server_main(void)
       // quero monitorar para ver se houve chegada de dados
 
       // Limpa a fila de sockets
-      /*ACRESCENTAR*/
+      f.clear();
       // Inclui na fila o socket de conexoes
-      /*ACRESCENTAR*/
+      f.include(sock_server);
       // Inclui na fila todos os sockets dos clientes conectados
-      /*ACRESCENTAR*/
+      for (auto& i : LU) {
+        if( i.isConnected()) f.include(i);
+      }
 
       // Espera ateh que chegue dado em algum socket (com timeout)
-      /*ACRESCENTAR*/
+      f.wait_read(10000);
 
       // De acordo com o resultado da espera:
       // SOCK_TIMEOUT:
@@ -252,7 +261,7 @@ void SupServidor::thr_server_main(void)
       // Fecha todos os sockets dos clientes
       for (auto& U : LU) U.close();
       // Fecha o socket de conexoes
-      /*ACRESCENTAR*/
+      sock.close();
 
       // Os tanques continuam funcionando
 
