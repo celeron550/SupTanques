@@ -335,7 +335,26 @@ void SupCliente::main_thread(void)
       if (cmd != CMD_DATA) throw 403;
       // Leh os dados (com timeout)
       // Em caso de erro, throw 404
-      /* ACRESCENTAR */
+      iResult = sock.read_uint16(S.V1, 1000*SUP_TIMEOUT);
+      if (iResult != mysocket_status::SOCK_OK) throw 404;
+      
+      iResult = sock.read_uint16(S.V2, 1000*SUP_TIMEOUT);
+      if (iResult != mysocket_status::SOCK_OK) throw 404;
+
+      iResult = sock.read_uint16(S.H1, 1000*SUP_TIMEOUT);
+      if (iResult != mysocket_status::SOCK_OK) throw 404;
+
+      iResult = sock.read_uint16(S.H2, 1000*SUP_TIMEOUT);
+      if (iResult != mysocket_status::SOCK_OK) throw 404;
+
+      iResult = sock.read_uint16(S.PumpInput, 1000*SUP_TIMEOUT);
+      if (iResult != mysocket_status::SOCK_OK) throw 404;
+
+      iResult = sock.read_uint16(S.PumpFlow, 1000*SUP_TIMEOUT);
+      if (iResult != mysocket_status::SOCK_OK) throw 404;
+
+      iResult = sock.read_uint16(S.ovfl, 1000*SUP_TIMEOUT);
+      if (iResult != mysocket_status::SOCK_OK) throw 404;
 
       // Libera o mutex para sair da zona de exclusao mutua
       mtx.unlock();
@@ -346,7 +365,7 @@ void SupCliente::main_thread(void)
       virtExibirInterface();
 
       // Espera "timeRefresh" segundos
-      /* ACRESCENTAR */
+      std::this_thread::sleep_for(std::chrono::seconds(timeRefresh));
     }
     catch(int err)
     {
@@ -365,7 +384,7 @@ void SupCliente::main_thread(void)
         // Espera 1 segundo para dar tempo ao servidor de ler a msg de LOGOUT
         std::this_thread::sleep_for(std::chrono::seconds(1));
         // antes de fechar o socket
-        /* ACRESCENTAR */
+        /* ACRESCENTAR -> acho que ja foi acrescentado oq era necessario*/ 
         // Fecha o socket
         sock.close();
       }

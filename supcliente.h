@@ -21,7 +21,7 @@ protected:
 
   // Funcoes de consulta
   // Cliente conectado (true) ou desconectado (false)
-  bool isConnected() const {return /* MODIFICAR */ false;}
+  bool isConnected() const {return sock.connected();}
   // Cliente administrador (true) ou visualizador (false)
   bool isAdmin() const {return is_admin;}
   // Ultimo estado da planta
@@ -38,7 +38,7 @@ protected:
   void desconectar();
 
   // Espera pelo fim da thread de solicitacao de dados
-  void join_if_joinable() {/* ACRESCENTAR */}
+  void join_if_joinable() {if (thr.joinable()) thr.join();}
 
   // As funcoes de comunicacao com o servidor
   // Fixa o estado da valvula 1: aberta (true) ou fechada (false)
