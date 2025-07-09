@@ -198,10 +198,14 @@ void SupServidor::thr_server_main(void)
   // Socket temporario
   tcp_mysocket t;
   // Informacao lida do socket
-  
+  int16_t cmd;
   // Variaveis auxiliares
   mysocket_status iResult;
-
+  
+  string login, senha;
+  SupState S;
+  std::list<User>::iterator iU;
+  mysocket_status iResult;
   
 
   while (server_on)
@@ -225,23 +229,67 @@ void SupServidor::thr_server_main(void)
       f.include(sock_server);
       // Inclui na fila todos os sockets dos clientes conectados
       for (auto& i : LU) {
-        if( i.isConnected()) f.include(i);
+        if( i.isConnected()) f.include(i.sock);
       }
 
       // Espera ateh que chegue dado em algum socket (com timeout)
-      f.wait_read(1000*SUP_TIMEOUT); 
-
+      iResult = f.wait_read(1000*SUP_TIMEOUT); 
+      
       // De acordo com o resultado da espera:
-      // SOCK_TIMEOUT:
-      // Saiu por timeout: nao houve atividade em nenhum socket
-      // Aproveita para salvar dados ou entao nao faz nada
-      // SOCK_ERROR:
-      // Erro no select: encerra o servidor
-      // SOCK_OK:
-      // Houve atividade em algum socket da fila:
-      //   Testa se houve atividade nos sockets dos clientes. Se sim:
-      //   - Leh o comando
-      //   - Executa a acao
+      switch(iResult)
+      {
+        // SOCK_TIMEOUT:
+        case mysocket_status::SOCK_TIMEOUT:
+        // Saiu por timeout: nao houve atividade em nenhum socket
+        // Aproveita para salvar dados ou entao nao faz nada
+          salvarDados();
+          break;
+
+        // SOCK_ERROR:
+        case mysocket_status::SOCK_ERROR:
+        // Erro no select: encerra o servidor
+        default:
+          throw "Erro no select.\n";
+          break;
+
+        // SOCK_OK:
+        case mysocket_status::SOCK_OK:
+        // Houve atividade em algum socket da fila:
+        try {
+          //   Testa se houve atividade nos sockets dos clientes. Se sim:
+          for(iU = LU.begin(), iU != LU.end(), ++iU)
+          {
+            if(server_on && iU->isConnected && i.had_activity(iU->sock))
+            {
+              //   - Leh o comando
+              iResult = iU->sock.read_int16(cmd);
+              if (iResult != mysocket_status::SOCK_OK) throw 1;
+              //   - Executa a acao
+              switch(cmd)
+              {
+                case CMD_LOGIN:
+                case CMD_ADMIN_OK:
+                case CMD_OK:
+                case CMD_ERROR:
+                case CMD_DATA:
+                default:
+                  throw 2;
+                  break;
+                case CMD_GET_DATA:
+                iu->sock.read_int16(cmd,SOCK_TIMEOUT*1000);
+                if (iResult !=mysocket_status::SOCK_OK) throw 3;
+                iResult = 
+                case CMD_SET_PUMP:
+                //
+                case CMD_SET_V1:
+                //
+                case CMD_SET_V2:
+              }
+            }
+          }
+        }
+
+      }
       //   = Envia resposta
       //   Depois, testa se houve atividade no socket de conexao. Se sim:
       //   - Estabelece nova conexao em socket temporario
