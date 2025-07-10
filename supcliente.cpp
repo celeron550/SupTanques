@@ -17,7 +17,6 @@ SupCliente::SupCliente()
   , thr()
 {
   // Inicializa a biblioteca de sockets
-  /* ACRESCENTAR */
   if (mysocket::init() != mysocket_status::SOCK_OK)
   {
     std::cerr <<  "Biblioteca mysocket nao pode ser inicializada";
