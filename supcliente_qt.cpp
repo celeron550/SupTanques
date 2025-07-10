@@ -231,7 +231,7 @@ void SupClienteQt::on_sliderPump_valueChanged(int value)
   // Jah exibe msg de erro em caso de insucesso.
 
   // Talvez precise tratar value, pois ele eh int, nao uint_16
-  setPumpInput(value);
+  setPumpInput(uint16_t(value));
 
   // Exibe valores nos displays LCD
   ui->lcdPumpVal->display(value);
@@ -255,7 +255,7 @@ void SupClienteQt::slotConectar(QString IP, QString Login, QString Senha)
 {
   // Chama funcao que conecta com o servidor.
   // Jah reexibe interface em qualquer caso e exibe msg em caso de erro.
-  conectar(IP, Login, Senha);
+  conectar(IP.toStdString(), Login.toStdString(), Senha.toStdString());
 }
 
 // Exibir informacao de erro
@@ -317,7 +317,7 @@ void SupClienteQt::slotExibirInterface()
 
       // Barra de status
       // Texto da mensagem varia se for administrador ou nao
-      QString msg = QString(" CONNECTED: ") + QString(meuUsuario) +
+      QString msg = QString(" CONNECTED: ") + QString(QString::fromStdString(meuUsuario)) +
           " (" + (ehAdministrador ? "admin" : "viewer") + ")";
       statusMsg->setText(msg);
     }
