@@ -242,7 +242,7 @@ void SupServidor::thr_server_main(void)
         case mysocket_status::SOCK_TIMEOUT:
         // Saiu por timeout: nao houve atividade em nenhum socket
         // Aproveita para salvar dados ou entao nao faz nada
-          salvarDados();
+          
           break;
 
         // SOCK_ERROR:
@@ -275,15 +275,73 @@ void SupServidor::thr_server_main(void)
                 default:
                   throw 2;
                   break;
+
                 case CMD_GET_DATA:
-                iu->sock.read_int16(cmd,SOCK_TIMEOUT*1000);
+                iResult = iu->sock.read_int16(cmd,SOCK_TIMEOUT*1000);
                 if (iResult !=mysocket_status::SOCK_OK) throw 3;
-                iResult = 
+                readStateFromSensors(S);
+                break;
+                
                 case CMD_SET_PUMP:
-                //
+                iResult = iU->sock.read_uint16(cmd, SUP_TIMEOUT*1000);
+                if (iResult != mysocket_status::SOCK_OK) throw 4;
+                break;
+
+                setPumpInput(iResult);
                 case CMD_SET_V1:
-                //
+                iResult = iU->sock.read_uint16(cmd, SUP_TIMEOUT*1000);
+                if (iResult != mysocket_status::SOCK_OK) throw 5;
+                setV1Open(cmd !=0 ); // revisar 
+                break;
+
                 case CMD_SET_V2:
+                iResult = iU->sock.read_uint16(cmd, SUP_TIMEOUT*1000);
+                if (iResult != mysocket_status::SOCK_OK) throw 6;
+                setV2Open(cmd !=0 ); // revisar 
+                break;
+                case CMD_LOGOUT:
+                // desloga kk
+                if (server_on && i.had_activity(iU->sock))
+                {
+                  iResult = sock_server.accept(t);
+                  if (iResult != mysocket_status::SOCK_OK) throw 7;
+                  
+                  //   - Leh comando, login e senha
+                  iResult = t.read_int16(cmd, SOCK_TIMEOUT*1000);
+                  if (iResult != mysocket_status::SOCK_OK) throw 8;
+
+                  iResult = t.read_string(cmd,  SOCK_TIMEOUT*1000);
+                  if (iResult != mysocket_status::SOCK_OK) throw 9;
+
+                  iResult = t.read_string(cmd, SOCK_TIMEOUT*1000);
+                  if (iResult != mysocket_status::SOCK_OK) throw 10;
+                  bool achou = false;
+                  for (auto&u : LU) {
+                    if (u.login == login && u.senha == senha) {
+                    userFound = true;
+
+                    // Fecha conexão anterior se houver
+                    if (u.isConnected()) u.close();
+
+                    // Associa novo socket ao usuário
+                    u.sock = t;
+                    
+
+                    // Envia confirmação
+                    iResult = u.sock.write_int16(CMD_OK);
+                    if (iResult != mysocket_status::SOCK_OK) {
+                      u.close();
+                      throw 11;
+                    }
+
+                    break;
+                  }
+                  if (!achou) throw 12;
+                }
+                  }
+
+                } 
+
               }
             }
           }
@@ -293,7 +351,6 @@ void SupServidor::thr_server_main(void)
       //   = Envia resposta
       //   Depois, testa se houve atividade no socket de conexao. Se sim:
       //   - Estabelece nova conexao em socket temporario
-      //   - Leh comando, login e senha
       //   - Testa usuario
       //   - Se deu tudo certo, faz o socket temporario ser o novo socket
       //     do cliente e envia confirmacao
@@ -315,7 +372,7 @@ void SupServidor::thr_server_main(void)
 
     } // fim catch - Erros mais graves que encerram o servidor
   } // fim while (server_on)
-}
+
 
 
 
