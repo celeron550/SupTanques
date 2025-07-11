@@ -55,3 +55,6 @@ compile_commands.json
 
 .vscode/*
 /build
+bin/Debug/SupCliente.exe
+.gitignore
+bin/Debug/SupServidor.exe

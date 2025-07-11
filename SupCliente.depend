@@ -1,0 +1,51 @@
+# depslib dependency file v1.0
+1751838210 source:c:\users\félix\documents\github\suptanques\mysocket.cpp
+	"mysocket.h"
+	<sys/types.h>
+	<netdb.h>
+	<unistd.h>
+
+1751838210 c:\users\félix\documents\github\suptanques\mysocket.h
+	<cstdint>
+	<string>
+	<winsock2.h>
+	<ws2tcpip.h>
+	<sys/socket.h>
+
+1752187754 source:c:\users\félix\documents\github\suptanques\supcliente.cpp
+	<iostream>
+	<chrono>
+	"supcliente.h"
+
+1752240085 c:\users\félix\documents\github\suptanques\supcliente.h
+	<string>
+	<ctime>
+	"supdados.h"
+	<thread>
+	"mysocket.h"
+	<mutex>
+	<cstdint>
+
+1751896436 c:\users\félix\documents\github\suptanques\supdados.h
+	<cstdint>
+
+1751838210 source:c:\users\félix\documents\github\suptanques\supcliente_main_term.cpp
+	"supcliente_term.h"
+
+1751838210 c:\users\félix\documents\github\suptanques\supcliente_term.h
+	"supcliente.h"
+
+1751838210 source:c:\users\félix\documents\github\suptanques\supcliente_term.cpp
+	<iostream>
+	<cmath>
+	"supcliente_term.h"
+
+1751838210 source:c:\users\félix\documents\github\suptanques\supdados.cpp
+	<iostream>
+	<iomanip>
+	<string>
+	"tanques-param.h"
+	"supdados.h"
+
+1751838210 c:\users\félix\documents\github\suptanques\tanques-param.h
+
