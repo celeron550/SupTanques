@@ -205,7 +205,7 @@ void SupServidor::thr_server_main(void)
   string login, senha;
   SupState S;
   std::list<User>::iterator iU;
-  mysocket_status iResult;
+  
   
 
   while (server_on)
@@ -217,7 +217,7 @@ void SupServidor::thr_server_main(void)
       // Encerra se o socket de conexoes estiver fechado
       if (!sock_server.accepting())
       {
-        throw "socket de conexoes fechado";
+        throw "socket de conexoes fechado\n";
       }
 
       // Inclui na fila de sockets todos os sockets que eu
@@ -229,7 +229,7 @@ void SupServidor::thr_server_main(void)
       f.include(sock_server);
       // Inclui na fila todos os sockets dos clientes conectados
       for (auto& i : LU) {
-        if( i.isConnected()) f.include(i.sock);
+        if (i.isConnected()) f.include(i.sock);
       }
 
       // Espera ateh que chegue dado em algum socket (com timeout)
@@ -257,9 +257,9 @@ void SupServidor::thr_server_main(void)
         // Houve atividade em algum socket da fila:
         try {
           //   Testa se houve atividade nos sockets dos clientes. Se sim:
-          for(iU = LU.begin(), iU != LU.end(), ++iU)
+          for(iU = LU.begin(); iU != LU.end(); ++iU)
           {
-            if(server_on && iU->isConnected && i.had_activity(iU->sock))
+            if(server_on && iU->isConnected() && f.had_activity(iU->sock))
             {
               //   - Leh o comando
               iResult = iU->sock.read_int16(cmd);
@@ -277,54 +277,68 @@ void SupServidor::thr_server_main(void)
                   break;
 
                 case CMD_GET_DATA:
-                iResult = iu->sock.read_int16(cmd,SOCK_TIMEOUT*1000);
-                if (iResult !=mysocket_status::SOCK_OK) throw 3;
-                readStateFromSensors(S);
-                break;
-                
+                {
+                  iResult = iU->sock.read_int16(cmd, SUP_TIMEOUT*1000);
+                  if (iResult !=mysocket_status::SOCK_OK) throw 3;
+                  readStateFromSensors(S);
+                  iU->sock.write_int16(CMD_DATA);
+                  break;
+                }
                 case CMD_SET_PUMP:
-                iResult = iU->sock.read_uint16(cmd, SUP_TIMEOUT*1000);
-                if (iResult != mysocket_status::SOCK_OK) throw 4;
-                break;
+                {
+                  uint16_t pumpValue;
+                  iResult = iU->sock.read_uint16(pumpValue, SUP_TIMEOUT*1000);
+                  if (iResult != mysocket_status::SOCK_OK) throw 4;
+                  setPumpInput(pumpValue);
+                  break;
+                }
 
-                setPumpInput(iResult);
                 case CMD_SET_V1:
-                iResult = iU->sock.read_uint16(cmd, SUP_TIMEOUT*1000);
-                if (iResult != mysocket_status::SOCK_OK) throw 5;
-                setV1Open(cmd !=0 ); // revisar 
-                break;
+                {
+                  uint16_t v1;
+                  iResult = iU->sock.read_uint16(v1, SUP_TIMEOUT*1000);
+                  if (iResult != mysocket_status::SOCK_OK) throw 5;
+                  setV1Open(v1 !=0 ); // revisar 
+                  break;
+                }
 
                 case CMD_SET_V2:
-                iResult = iU->sock.read_uint16(cmd, SUP_TIMEOUT*1000);
-                if (iResult != mysocket_status::SOCK_OK) throw 6;
-                setV2Open(cmd !=0 ); // revisar 
-                break;
+                {
+                  uint16_t v2;
+                  iResult = iU->sock.read_uint16(v2, SUP_TIMEOUT*1000);
+                  if (iResult != mysocket_status::SOCK_OK) throw 6;
+                  setV2Open(v2 !=0 ); // revisar 
+                  break;
                 case CMD_LOGOUT:
                 // desloga kk
-                if (server_on && i.had_activity(iU->sock))
+                  iU->close();
+
+                if (server_on && f.had_activity(iU->sock))
                 {
                   iResult = sock_server.accept(t);
                   if (iResult != mysocket_status::SOCK_OK) throw 7;
                   
                   //   - Leh comando, login e senha
-                  iResult = t.read_int16(cmd, SOCK_TIMEOUT*1000);
+                  iResult = t.read_int16(cmd, SUP_TIMEOUT*1000);
                   if (iResult != mysocket_status::SOCK_OK) throw 8;
 
-                  iResult = t.read_string(cmd,  SOCK_TIMEOUT*1000);
+                  iResult = t.read_string(login,  SUP_TIMEOUT*1000);
                   if (iResult != mysocket_status::SOCK_OK) throw 9;
 
-                  iResult = t.read_string(cmd, SOCK_TIMEOUT*1000);
+                  iResult = t.read_string(senha, SUP_TIMEOUT*1000);
                   if (iResult != mysocket_status::SOCK_OK) throw 10;
+
                   bool achou = false;
                   for (auto&u : LU) {
-                    if (u.login == login && u.senha == senha) {
-                    userFound = true;
+                    if (u.login == login && u.password == senha) {
+                    achou = true;
 
                     // Fecha conexão anterior se houver
                     if (u.isConnected()) u.close();
 
                     // Associa novo socket ao usuário
-                    u.sock = t;
+                    u.sock.swap(t);
+                    u.sock.write_int16(CMD_OK);
                     
 
                     // Envia confirmação
@@ -345,7 +359,7 @@ void SupServidor::thr_server_main(void)
               }
             }
           }
-        }
+      }
 
       }
       //   = Envia resposta
@@ -366,7 +380,7 @@ void SupServidor::thr_server_main(void)
       // Fecha todos os sockets dos clientes
       for (auto& U : LU) U.close();
       // Fecha o socket de conexoes
-      sock.close();
+      sock_server.close();
 
       // Os tanques continuam funcionando
 
