@@ -52,3 +52,8 @@
 	"tanques.h"
 	"supdados.h"
 
+1752362245 source:c:\users\félix\documents\github\suptanques\supservidor.cpp
+	<iostream>
+	<algorithm>
+	"supservidor.h"
+
