@@ -206,7 +206,7 @@ void SupServidor::thr_server_main(void)
     try
     {
       if (!sock_server.accepting())
-        throw "socket de conexoes fechado\n";
+        throw 1;
 
       // Monta a fila de sockets
       f.clear();
@@ -221,7 +221,7 @@ void SupServidor::thr_server_main(void)
       {
       case mysocket_status::SOCK_ERROR:
       default:
-        throw "Erro no select.\n";
+        throw 2;
         break;
 
       case mysocket_status::SOCK_TIMEOUT:
@@ -231,14 +231,16 @@ void SupServidor::thr_server_main(void)
       case mysocket_status::SOCK_OK:
         try
         {
-          // 1. Trata comandos dos clientes já conectados
+          // Primeiro, testa os sockets dos clientes
           for (iU = LU.begin(); server_on && iU != LU.end(); ++iU)
           {
             if (iU->isConnected() && f.had_activity(iU->sock))
             {
+              // Leh o comando recebido do cliente
               iResult = iU->sock.read_uint16(cmd);
-              if (iResult != mysocket_status::SOCK_OK) { iU->close(); continue; }
+              if (iResult != mysocket_status::SOCK_OK) throw 3;
 
+              // Executa o comando lido
               switch (cmd)
               {
               case CMD_GET_DATA:
@@ -256,24 +258,27 @@ void SupServidor::thr_server_main(void)
               {
                 uint16_t pumpValue;
                 iResult = iU->sock.read_uint16(pumpValue, SUP_TIMEOUT * 1000);
-                if (iResult == mysocket_status::SOCK_OK)
-                  setPumpInput(pumpValue);
+                if (!iU->isAdmin) throw -24;
+                if (iResult != mysocket_status::SOCK_OK) throw 5;
+                setPumpInput(pumpValue);
                 break;
               }
               case CMD_SET_V1:
               {
                 uint16_t v1;
                 iResult = iU->sock.read_uint16(v1, SUP_TIMEOUT * 1000);
-                if (iResult == mysocket_status::SOCK_OK)
-                  setV1Open(v1 != 0);
+                if (!iU->isAdmin) throw -24;
+                if (iResult != mysocket_status::SOCK_OK) throw 6;
+                setV1Open(v1 != 0);
                 break;
               }
               case CMD_SET_V2:
               {
                 uint16_t v2;
                 iResult = iU->sock.read_uint16(v2, SUP_TIMEOUT * 1000);
-                if (iResult == mysocket_status::SOCK_OK)
-                  setV2Open(v2 != 0);
+                if (!iU->isAdmin) throw -24;
+                if (iResult != mysocket_status::SOCK_OK) throw 7;
+                setV2Open(v2 != 0);
                 break;
               }
               case CMD_LOGOUT:
@@ -291,17 +296,17 @@ void SupServidor::thr_server_main(void)
           if (server_on && sock_server.connected() && f.had_activity(sock_server))
           {
             iResult = sock_server.accept(t);
-            if (iResult != mysocket_status::SOCK_OK) { t.close(); break; }
+            if (iResult != mysocket_status::SOCK_OK) throw -1;
 
             // Lê comando, login e senha do novo cliente
             iResult = t.read_uint16(cmd, SUP_TIMEOUT * 1000);
-            if (iResult != mysocket_status::SOCK_OK) { t.close(); break; }
-            if (cmd != CMD_LOGIN) { t.close(); break; }
+            if (iResult != mysocket_status::SOCK_OK) throw -2;
+            if (cmd != CMD_LOGIN) throw -3;
 
             iResult = t.read_string(login, SUP_TIMEOUT * 1000);
-            if (iResult != mysocket_status::SOCK_OK) { t.close(); break; }
+            if (iResult != mysocket_status::SOCK_OK) throw -4;
             iResult = t.read_string(senha, SUP_TIMEOUT * 1000);
-            if (iResult != mysocket_status::SOCK_OK) { t.close(); break; }
+            if (iResult != mysocket_status::SOCK_OK) throw -5;
 
             // Procura usuário
             iU = find(LU.begin(), LU.end(), login);
@@ -309,7 +314,7 @@ void SupServidor::thr_server_main(void)
             {
               // Login inválido, senha errada ou já conectado
               t.write_uint16(CMD_ERROR);
-              t.close();
+              throw -6;
               break;
             }
 
@@ -320,8 +325,7 @@ void SupServidor::thr_server_main(void)
         }
         catch (...)
         {
-          // Erro em algum cliente: apenas fecha o socket do cliente problemático
-          // (já tratado acima com iU->close())
+          t.close();
         }
         break;
       }
