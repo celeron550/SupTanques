@@ -323,10 +323,12 @@ void SupClienteQt::slotExibirInterface()
     }
 
     // Exibe nos visualizadores o ultimo estado lido da planta.
-    showValves(last_S.V1, last_S.V2);
-    showPump(last_S.PumpInput);
-    showH(last_S.H1, last_S.H2, last_S.ovfl);
-    showFlow(last_S.PumpFlow);
+    const SupState& lastStatus = lastState();
+    
+    showValves(lastStatus.V1, lastStatus.V2);
+    showPump(lastStatus.PumpInput);
+    showH(lastStatus.H1, lastStatus.H2, lastStatus.ovfl);
+    showFlow(lastStatus.PumpFlow);
 
     // Exibe a imagem
     image->drawImg();
