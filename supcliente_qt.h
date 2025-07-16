@@ -28,7 +28,7 @@ private:
   void virtExibirInterface() const override;
 
   // Armazena o ultimo estado atual da planta
-  void storeState(const SupState& lastS) override;
+  void storeState(const int deltaT(), const SupState& lastS) override;
   // Limpa todos os estados armazenados da planta
   void clearState() override;
   
