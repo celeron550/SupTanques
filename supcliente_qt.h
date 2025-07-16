@@ -28,7 +28,7 @@ private:
   void virtExibirInterface() const override;
 
   // Armazena o ultimo estado atual da planta
-  void storeState(const int deltaT(), const SupState& lastS) override;
+  void storeState(const SupState& lastS) override;
   // Limpa todos os estados armazenados da planta
   void clearState() override;
   
@@ -39,7 +39,7 @@ signals:
   // Sinaliza a necessidade de exibir dados recebidos
   void signExibirInterface() const;
 
-  void signStoreState(const SupState& lastS) const;
+  void signStoreState(const int deltaT(), const SupState& lastS) const;
 
 private slots:
   void on_actionLogin_triggered();
@@ -50,6 +50,7 @@ private slots:
   void on_sliderPump_valueChanged(int value);
   void on_showLevel_toggled(bool checked);
   void on_spinRefresh_valueChanged(int arg1);
+  void slotStoreState(const int deltaT(),const SupState& lastS);
 
   // Conectar ao servidor
   void slotConectar(QString IP, QString Login, QString Senha);
