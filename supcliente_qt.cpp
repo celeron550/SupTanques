@@ -176,7 +176,13 @@ void SupClienteQt::virtExibirInterface() const
 void SupClienteQt::storeState(const SupState& lastS)
 {
   SupCliente::storeState(lastS);
-  // Acrescenta o ponto no grafico.
+  // Acrescenta o ponto no grafico, chamando um slot que faça o comando a seguir
+  emit signStoreState(lastS);
+  //image->addPoint(deltaT(), lastS);
+}
+
+void SupClienteQt::signStoreState(const SupState& lastS) const
+{
   image->addPoint(deltaT(), lastS);
 }
 

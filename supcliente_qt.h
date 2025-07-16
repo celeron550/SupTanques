@@ -39,6 +39,8 @@ signals:
   // Sinaliza a necessidade de exibir dados recebidos
   void signExibirInterface() const;
 
+  void signStoreState(const SupState& lastS) const;
+
 private slots:
   void on_actionLogin_triggered();
   void on_actionLogout_triggered();
