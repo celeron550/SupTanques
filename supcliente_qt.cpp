@@ -126,8 +126,6 @@ SupClienteQt::SupClienteQt(QWidget *parent)
           this, &SupClienteQt::slotExibirErro);
   connect(this, &SupClienteQt::signExibirInterface,
           this, &SupClienteQt::slotExibirInterface);
-  connect(this, &SupClienteQt::signStoreState,
-          this, &SupClienteQt::slotStoreState);
 
   // Os sinais da SupLogin
   connect(loginWindow, &SupLogin::signConectar,
@@ -175,7 +173,7 @@ void SupClienteQt::virtExibirInterface() const
 /// para acrescentar o armazenamento no historico de dados para o grafico.
 
 /// Armazena o ultimo estado atual da planta
-void SupClienteQt::slotStoreState(const int deltaT(), const SupState& lastS)
+void SupClienteQt::storeState(const int deltaT(), const SupState& lastS)
 {
   SupCliente::storeState(lastS);
   // Acrescenta o ponto no grafico, chamando um slot que faça o comando a seguir
@@ -183,9 +181,10 @@ void SupClienteQt::slotStoreState(const int deltaT(), const SupState& lastS)
   //image->addPoint(deltaT(), lastS);
 }
 
-
-
-
+void SupClienteQt::signStoreState(int delta(), const SupState& lastS) const
+{
+  image->addPoint(deltaT(), lastS);
+}
 
 /// Limpa todos os estados armazenados da planta
 void SupClienteQt::clearState()
