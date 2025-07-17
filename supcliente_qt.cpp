@@ -173,15 +173,15 @@ void SupClienteQt::virtExibirInterface() const
 /// para acrescentar o armazenamento no historico de dados para o grafico.
 
 /// Armazena o ultimo estado atual da planta
-void SupClienteQt::storeState(const int deltaT(), const SupState& lastS)
+void SupClienteQt::storeState(const SupState& lastS)
 {
   SupCliente::storeState(lastS);
   // Acrescenta o ponto no grafico, chamando um slot que faça o comando a seguir
-  emit signStoreState(deltaT(), lastS);
+  emit signStoreState(lastS);
   //image->addPoint(deltaT(), lastS);
 }
 
-void SupClienteQt::signStoreState(int delta(), const SupState& lastS) const
+void SupClienteQt::signStoreState(const SupState& lastS) const
 {
   image->addPoint(deltaT(), lastS);
 }
