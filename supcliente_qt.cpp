@@ -126,6 +126,10 @@ SupClienteQt::SupClienteQt(QWidget *parent)
           this, &SupClienteQt::slotExibirErro);
   connect(this, &SupClienteQt::signExibirInterface,
           this, &SupClienteQt::slotExibirInterface);
+  connect(this, &SupClienteQt::signStoreState,
+          this, &SupClienteQt::slotStoreState);
+  connect(this, &SupClienteQt::signClearState,
+          this, &SupClienteQt::slotClearState);
 
   // Os sinais da SupLogin
   connect(loginWindow, &SupLogin::signConectar,
@@ -175,18 +179,21 @@ void SupClienteQt::virtExibirInterface() const
 /// Armazena o ultimo estado atual da planta
 void SupClienteQt::storeState(const SupState& lastS)
 {
+  // Chama a funcao da classe base
   SupCliente::storeState(lastS);
   // Acrescenta o ponto no grafico.
-  image->addPoint(deltaT(), lastS);
+  emit signStoreState(lastS);
 }
 
 /// Limpa todos os estados armazenados da planta
 void SupClienteQt::clearState()
 {
+  // Chama a funcao da classe base
   SupCliente::clearState();
   // Limpa o grafico.
-  image->clear();
+  emit signClearState();
 }
+
 
 
 void SupClienteQt::on_actionLogin_triggered()
@@ -378,6 +385,18 @@ void SupClienteQt::slotExibirInterface()
       image->clear();
     }
   }
+}
+
+/// Inclui o ultimo estado atual da planta (que jah estah armazenado) na imagem
+void SupClienteQt::slotStoreState(const SupState& lastS)
+{
+  image->addPoint(deltaT(), lastS);
+}
+
+/// Limpa todos os pontos (que jah foram apagados) da imagem
+void SupClienteQt::slotClearState()
+{
+  image->clear();
 }
 
 void SupClienteQt::showValves(uint16_t V1, uint16_t V2)

@@ -31,13 +31,25 @@ private:
   void storeState(const SupState& lastS) override;
   // Limpa todos os estados armazenados da planta
   void clearState() override;
-  
+
+  /*
+  // As funcoes virtuais de armazenamento de dados.
+  // Armazena o ultimo estado atual da planta
+  void storeState(const SupState& lastS) override;
+  // Limpa todos os estados armazenados da planta
+  void clearState() override;
+  */
 
 signals:
   // Sinaliza a necessidade de exibir informacao de erro
   void signExibirErro(const std::string& msg) const;
   // Sinaliza a necessidade de exibir dados recebidos
   void signExibirInterface() const;
+
+  // Sinaliza a necessidade de incluir o ultimo ponto (que jah estah armazenado) na imagem
+  void signStoreState(const SupState& lastS) const;
+  // Sinaliza a necessidade de limpar todos os pontos (qhe jah foram apagados) da imagem
+  void signClearState() const;
 
 private slots:
   void on_actionLogin_triggered();
@@ -57,6 +69,12 @@ private slots:
 
   // Redesenha a interface
   void slotExibirInterface();
+
+  // Inclui o ultimo estado atual da planta (que jah estah armazenado) na imagem
+  void slotStoreState(const SupState& lastS);
+
+  // Limpa todos os pontos (que jah foram apagados) da imagem
+  void slotClearState();
 
 // As funcoes privadas da classe
 private:
