@@ -275,6 +275,7 @@ void SupServidor::thr_server_main(void)
                   if (iResult != mysocket_status::SOCK_OK) throw 3;
                   setPumpInput(cmd);
                   iU->sock.write_uint16(CMD_OK);
+                  cout << "\nEntrada da bomba alterada para " << cmd << endl;
                   break;
 
                   case CMD_SET_V1:
@@ -283,6 +284,7 @@ void SupServidor::thr_server_main(void)
                   if (iResult != mysocket_status::SOCK_OK) throw 3;
                   setV1Open(cmd != 0);
                   iU->sock.write_uint16(CMD_OK);
+                  cout << "\nAlterado o estado da valvula 1\n";
                   break;
 
                   case CMD_SET_V2:
@@ -291,11 +293,13 @@ void SupServidor::thr_server_main(void)
                   if (iResult != mysocket_status::SOCK_OK) throw 3;
                   setV2Open(cmd != 0);
                   iU->sock.write_uint16(CMD_OK);
+                  cout << "\nAlterado o estado da valvula 2\n";
                   break;
 
                   case CMD_LOGOUT:
                   // desloga kk
                   iU->close();
+                  cout << "\n Usuario " << iU->login << " se desconectou \n";
                   break;
 
                 } // Fim do switch(cmd)
@@ -348,6 +352,8 @@ void SupServidor::thr_server_main(void)
             if (iU->isAdmin) iResult = iU->sock.write_uint16(CMD_ADMIN_OK);
             else iResult = iU->sock.write_uint16(CMD_OK);
             if (iResult != mysocket_status::SOCK_OK) throw 9;
+            // mensagem em console confirmando que o cliente se conectou
+            cout << "\nUsuario " << iU->login << " conectado\n";
           
 
           } // Fim do try para erros na conexao de cliente
