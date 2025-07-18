@@ -305,6 +305,7 @@ void SupServidor::thr_server_main(void)
         catch (int e) // erros na leitura do socket de algum cliente
         {
           cerr << "Erro " << e << " na leitura de socket do cliente \n";
+          iU->close();
         }
 
         // Depois de testar os sockets dos clientes,

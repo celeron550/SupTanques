@@ -12,12 +12,15 @@
 	<ws2tcpip.h>
 	<sys/socket.h>
 
-1752187754 source:c:\users\félix\documents\github\suptanques\supcliente.cpp
+1752855238 source:c:\users\félix\documents\github\suptanques\supcliente.cpp
 	<iostream>
-	<chrono>
 	"supcliente.h"
+	"mysocket.h"
+	<thread>
+	<mutex>
+	<chrono>
 
-1752240085 c:\users\félix\documents\github\suptanques\supcliente.h
+1752752210 c:\users\félix\documents\github\suptanques\supcliente.h
 	<string>
 	<ctime>
 	"supdados.h"
@@ -35,7 +38,7 @@
 1751838210 c:\users\félix\documents\github\suptanques\supcliente_term.h
 	"supcliente.h"
 
-1751838210 source:c:\users\félix\documents\github\suptanques\supcliente_term.cpp
+1752752221 source:c:\users\félix\documents\github\suptanques\supcliente_term.cpp
 	<iostream>
 	<cmath>
 	"supcliente_term.h"
